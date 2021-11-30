@@ -64,14 +64,14 @@ sr = mosaic(stas, recov, fun = "max")
 # --- first year as NA because we don't know what preceded it
 l1 <- nca %>% 
   subset(1) %>% 
-  mask(fires[fires$FireYear == 1986, ]) %>% 
+  mask(fires[fires$FireYear == 1985, ]) %>% 
   reclassify(rcl = t( matrix(c(-1, 100, 103), nr = 3)) )
 
 # --- reclassify the rest of the layers
 for(i in 2:dim(nca)[3] ) {
   l2 <- nca %>% 
     subset(i) %>% 
-    mask(fires[fires$FireYear == 1986 + (i-1), ]) %>% 
+    mask(fires[fires$FireYear == 1985 + (i-1), ]) %>% 
     reclassify(rcl = t( matrix(c(-1, 100, 103), nr = 3)) )
     
   l1 <- stack(l1, l2)
