@@ -27,6 +27,7 @@ dfs <- read.csv(paste0(path, "data/sage_dat_subset.csv")) %>%
 K <- 15
 catmat <- as.data.frame(matrix(NA, nr = nrow(dfs), nc = K))
 for(i in 1:K) {
+  print(paste("processing: K =", i))
   catmat[, i] <- ifelse(dfs$timerec > i, 
                         paste0(">", i, "years"),
                         as.character(dfs$timerec))
@@ -37,13 +38,14 @@ dfout <- dfs %>%
   bind_cols(catmat) %>% 
   mutate(across(starts_with("timerec_"), as.factor))
 
-# write.csv(dfout, file = paste0(path, "data/sage_dat_subset_tsd.csv"), row.names = FALSE)
+# write.csv(dfout, file = paste0(path, "shrub_dat_subset_tsd.csv"), row.names = FALSE)
 
 # === run model loop and store AIC
-dfout <- read.csv(paste0(path, "data/sage_dat_subset_tsd.csv"))
+dfout <- read.csv(paste0(path, "shrub_dat_subset_tsd.csv"))
 
 mouts <- list()
 for(i in 1:K){
+  print(paste("fitting: K =", i))
   m <- dfout %>% 
     mutate(tsd = dfout[,7+i]) %>% 
     filter(nt0 > 0) %>% 
@@ -55,11 +57,20 @@ for(i in 1:K){
 # generate AIC table for model comparison
 AICcmodavg::aictab(mouts)
 # save output
-saveRDS(mouts, file = paste0(path, "sage_models.rds"))
+saveRDS(mouts, file = paste0(path, "shrub_models.rds"))
 # ===
 
+# === fit brms with timerec_10
+library(brms)
+fit10 <- dfout %>% 
+  mutate(tsd = timerec_8) %>% 
+  filter(nt0 > 0) %>% 
+  brm(nt1 ~ 1 + log(nt0) + tsd + offset(log(nt0)), family = poisson, 
+                          iter = 2000, cores = 4, chains = 4,
+                          data = ., prior = prior(lasso(), class = "b"))
+
 # === Sagebrush models
-dfs <- read.csv(paste0(path, "data/shrub_dat_subset.csv")) %>% 
-  mutate(timerec = ifelse(is.na(timerec), 50, timerec))
+# dfs <- read.csv(paste0(path, "data/shrub_dat_subset.csv")) %>% 
+#   mutate(timerec = ifelse(is.na(timerec), 50, timerec))
 
 

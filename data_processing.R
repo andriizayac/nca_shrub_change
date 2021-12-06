@@ -136,13 +136,13 @@ xy <- df %>%
   summarize_all(mean) %>% as.data.frame()
 
 rownames(xy) <- xy$ID
-res <- 900
+res <- 1800
 r <- raster(extent(range(xy$x), range(xy$y)) + res)
 res(r) <- res
-s <- gridSample(xy[,2:3], r, n = 50)
+s <- gridSample(xy[,2:3], r, n = 25)
 
 s$ID <- as.numeric(rownames(s))
 
 dffin <- filter(df, ID %in% s$ID)
 
-write.csv(dffin, file = paste0(path, "data/sage_dat_subset.csv"), row.names = FALSE)
+write.csv(dffin, file = paste0(path, "shrub_dat_subset.csv"), row.names = FALSE)
